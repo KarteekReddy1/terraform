@@ -1,16 +1,16 @@
 terraform {
   backend "s3" {
-    bucket         = "my1-terraform1-states1"   # S3 bucket for state
-    key            = "ec2/terraform.tfstate" # Base path, workspace name auto-appended
+    bucket         = "my1-terraform1-states1" # S3 bucket for state
+    key            = "ec2/terraform.tfstate"  # Base path, workspace name auto-appended
     region         = "us-east-1"
-    dynamodb_table = "terraform-locks"       # Optional: for state locking
+    dynamodb_table = "terraform-locks" # Optional: for state locking
     encrypt        = true
   }
 }
 
 data "aws_vpc" "default" {
   default = true
-  
+
 }
 data "aws_subnets" "default" {
   filter {
