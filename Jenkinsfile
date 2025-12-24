@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_CREDS = credentials('ec2-user')  // must be AWS keys, not ec2-user
+        AWS_CREDS = credentials('aws-terraform-creds')  // FIXED: AWS Credentials ID
     }
 
     parameters {
@@ -48,7 +48,11 @@ pipeline {
                 expression { return params.WORKSPACE != 'none' }
             }
             steps {
-                sh 'terraform plan -out=tfplan'
+                sh '''
+                  export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                  export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+                  terraform plan -out=tfplan
+                '''
             }
         }
 
@@ -60,7 +64,11 @@ pipeline {
                 }
             }
             steps {
-                sh 'terraform apply -auto-approve tfplan'
+                sh '''
+                  export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                  export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+                  terraform apply -auto-approve tfplan
+                '''
             }
         }
 
