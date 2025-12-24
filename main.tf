@@ -8,33 +8,33 @@ terraform {
   }
 }
 
+provider "aws" {
+  region = var.region
+}
+
 data "aws_vpc" "default" {
   default = true
 }
 
-# Modern syntax: Use singular .id (no more .ids[])
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+
   filter {
     name   = "default-for-az"
     values = ["true"]
   }
 }
 
-provider "aws" {
-  region = var.region
-}
-
 resource "aws_instance" "example" {
   ami           = var.ami
   instance_type = var.instance_type
-  
-  # ✅ MODERN: .id returns first subnet (no indexing needed)
-  subnet_id = data.aws_subnets.default.id
-  
+
+  # ✅ FIX
+  subnet_id = data.aws_subnets.default.ids[0]
+
   tags = {
     Name = "${terraform.workspace}-jenkins-ec2"
   }
