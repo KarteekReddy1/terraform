@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_CREDS = credentials('aws-terraform-creds')  // FIXED: AWS Credentials ID
+        AWS_CREDS = credentials('ec2-user')  // FIXED: AWS Credentials ID
     }
 
     parameters {
