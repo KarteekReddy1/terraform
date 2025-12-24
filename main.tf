@@ -22,10 +22,6 @@ data "aws_subnets" "default" {
     values = [data.aws_vpc.default.id]
   }
 
-  filter {
-    name   = "default-for-az"
-    values = ["true"]
-  }
 }
 
 resource "aws_instance" "example" {
