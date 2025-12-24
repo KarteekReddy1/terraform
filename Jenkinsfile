@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/KarteekReddy1/terraform.git'
+                git branch: 'master', url: 'https://github.com/KarteekReddy1/terraform.git'
             }
         }
 
