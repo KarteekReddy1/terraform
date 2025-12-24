@@ -1,72 +1,76 @@
-environment {
-    AWS_CREDS = credentials('ec2-user')
-}
+pipeline {
+    agent any
 
-parameters {
-    choice(name: 'WORKSPACE', choices: ['dev', 'staging', 'prod'], description: 'Select Terraform workspace')
-    booleanParam(name: 'DESTROY', defaultValue: false, description: 'Set true to destroy infra')
-}
-
-stages {
-    stage('Checkout') {
-        steps {
-            git branch: 'main', url: 'https://github.com/KarteekReddy1/terraform.git'
-        }
+    environment {
+        AWS_CREDS = credentials('ec2-user')
     }
 
-    stage('Terraform Init') {
-        steps {
-            sh '''
-              export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
-              export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
-              terraform init
-            '''
-        }
+    parameters {
+        choice(name: 'WORKSPACE', choices: ['dev', 'staging', 'prod'], description: 'Select Terraform workspace')
+        booleanParam(name: 'DESTROY', defaultValue: false, description: 'Set true to destroy infra')
     }
 
-    stage('Select Workspace') {
-        steps {
-            sh '''
-              export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
-              export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
-              terraform workspace select ${WORKSPACE} || terraform workspace new ${WORKSPACE}
-            '''
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/KarteekReddy1/terraform.git'
+            }
         }
-    }
 
-    stage('Terraform Plan') {
-        steps {
-            sh '''
-              export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
-              export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
-              terraform plan -out=tfplan
-            '''
+        stage('Terraform Init') {
+            steps {
+                sh '''
+                  export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                  export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+                  terraform init
+                '''
+            }
         }
-    }
 
-    stage('Terraform Apply') {
-        when {
-            expression { return params.DESTROY == false }
+        stage('Select Workspace') {
+            steps {
+                sh '''
+                  export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                  export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+                  terraform workspace select ${WORKSPACE} || terraform workspace new ${WORKSPACE}
+                '''
+            }
         }
-        steps {
-            sh '''
-              export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
-              export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
-              terraform apply -auto-approve tfplan
-            '''
-        }
-    }
 
-    stage('Terraform Destroy') {
-        when {
-            expression { return params.DESTROY == true }
+        stage('Terraform Plan') {
+            steps {
+                sh '''
+                  export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                  export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+                  terraform plan -out=tfplan
+                '''
+            }
         }
-        steps {
-            sh '''
-              export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
-              export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
-              terraform destroy -auto-approve
-            '''
+
+        stage('Terraform Apply') {
+            when {
+                expression { return params.DESTROY == false }
+            }
+            steps {
+                sh '''
+                  export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                  export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+                  terraform apply -auto-approve tfplan
+                '''
+            }
+        }
+
+        stage('Terraform Destroy') {
+            when {
+                expression { return params.DESTROY == true }
+            }
+            steps {
+                sh '''
+                  export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                  export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+                  terraform destroy -auto-approve
+                '''
+            }
         }
     }
 }
