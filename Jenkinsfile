@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_CREDS = credentials('ec2-user')
+        AWS_CREDS = credentials('aws-creds-id')  // must be AWS keys, not ec2-user
     }
 
     parameters {
@@ -35,7 +35,11 @@ pipeline {
                 expression { return params.WORKSPACE != 'none' }
             }
             steps {
-                sh "terraform workspace select ${WORKSPACE} || terraform workspace new ${WORKSPACE}"
+                sh '''
+                  export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                  export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+                  terraform workspace select ${WORKSPACE} || terraform workspace new ${WORKSPACE}
+                '''
             }
         }
 
@@ -68,7 +72,12 @@ pipeline {
                 }
             }
             steps {
-                sh 'terraform destroy -auto-approve'
+                sh '''
+                  export AWS_ACCESS_KEY_ID=$AWS_CREDS_USR
+                  export AWS_SECRET_ACCESS_KEY=$AWS_CREDS_PSW
+                  terraform workspace select ${WORKSPACE}
+                  terraform destroy -auto-approve
+                '''
             }
         }
     }
