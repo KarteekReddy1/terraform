@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_CREDS = credentials('aws-creds-id')  // must be AWS keys, not ec2-user
+        AWS_CREDS = credentials('ec2-user')  // must be AWS keys, not ec2-user
     }
 
     parameters {
